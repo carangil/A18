@@ -1,0 +1,107 @@
+The C Users' Group welcomes submissions for inclusion in the
+C public domain library. Please sign and return the following information
+with your submission. Thank you.
+
+
+AUTHOR'S RELEASE
+
+For CUG Library Contribution
+	
+We can not distribute your submission without this release.
+Please fill out, sign and return this form.  Don't hesitate to
+call if you have questions.
+
+NAME______________________________DATE________________________
+
+ADDRESS_______________________________________________________
+
+CITY___________________________STATE_______ZIP________________
+
+COUNTRY_______________________________________________________
+
+PHONE__________________________AFFILIATION____________________
+
+DESCRIPTION OF SUBMITTED MATERIALS:
+
+
+
+
+
+
+
+
+
+The submitted materials are:
+
+____Of unknown origin or status.
+
+____(Someone else's Public Domain or Shareware)
+    To the best of my knowledge currently in the public domain
+    or authorized for distribution as shareware.
+
+____(My Public Domain)
+    Written by me and hereby placed into the public domain.
+    Permission is hereby granted to The C Users' Group to distribute
+    the submitted materials freely for non-commercial personal use.
+
+____(My Shareware)
+    Written by me and protected by certain copyright restrictions
+    clearly specified in the files constituting the submission.
+    Permission is hereby granted to The C Users' Group to
+    distribute the submitted materials, without royalty or
+    other compensation, and to charge their normal distribution
+    fee for such distribution, provided that my copyright restrictions
+    are included unchanged in each copy distributed. 
+
+Signed:_____________________________________Date:____________
+
+
+SUBMISSION GUIDELINES
+
+Please avoid sub-directories, squeezed files, library files or other
+compacted formats. CUG appreciates and prefers submissions with
+cataloging headers on all text files (See the sample below and our directory
+for the additional information.)
+
+
+SAMPLE HEADER
+/*
+HEADER:		;
+TITLE:		Diskette sector editor;
+VERSION:	1.4;
+
+DESCRIPTION:	"Lets you view, edit and write back a diskette sector.
+
+		It needs a 24*80 cursor-addressable terminal, and requires
+		your custom CLRSCREEN() and GOTOXY() functions.  The
+		definitions of these functions appear early in SE.C.
+
+		Compiling requires SENTER.C, included on the diskette.
+		Also included are SE.DOC and SE.SUB.";
+
+KEYWORDS:	Disk, utility, editor, sector;
+SYSTEM:		CP/M-80, V2.2;
+FILENAME:	SE.C;
+WARNINGS:	"Requires Version 2.x of CP/M.
+		SE is not designed to work with systems using the DEBLOCK
+		routine in the BIOS to handle physical sectors larger than
+		128 bytes, so if you have such a system, and want to use SE,
+		you must modify the routines in SE which write back the edited
+		sector.  The BitMap command is not implemented.";
+
+SEE-ALSO:	SE.DOC, SENTER.C;
+AUTHORS:	Jan Larsson;
+COMPILERS:	BDS C, v1.43 and 1.5a;
+*/
+
+The C Users' Group (CUG) collects, maintains and distributes
+public domain C source code, publishes a magazine, The C Users' Journal
+and serves as a resource for C users. Several vendors have named
+CUG as the official users group for their implementation of C.
+For membership and subscription information contact
+
+	The C Users' Group
+	2601 Iowa
+	Lawrence, KS 66047
+	(913) 841-1631
+

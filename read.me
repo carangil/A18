@@ -1,0 +1,105 @@
+/*
+	HEADER:		CUG149;
+	TITLE:		Cross-Assemblers (Portable);
+	FILENAME:	READ.ME;
+	VERSION:	1.0;
+	DATE:		09/25/1985;
+
+	DESCRIPTION:	"This is the general introduction file for the portable
+			versions of the 1805A, 6801, and 6805 cross-assemblers.
+			Each assembler is explained in detail in its header
+			files.";
+
+	SEE-ALSO:	1805A Cross-Assembler (Portable),
+			6801 Cross-Assembler (Portable),
+			6805 Cross-Assembler (Portable);
+
+	AUTHORS:	William C. Colley III;
+*/
+
+     What's on this disk?  It goes like this:
+
+	READ.ME		This notice.
+
+	A68.DOC		The manual for the 6801 cross-assembler.  This file
+			can be printed with the following command line under
+			CP/M-80:
+
+				A>pip lst:=a68.doc[t8]
+
+	A68.H		The source files for the 6801 cross-assembler.  The
+	A68.C		file A68.H also contains compile, assemble, and link
+	A68EVAL.C	instructions for all compilers that I have used with
+	A68UTIL.C	the package or that users have told me how to use with
+			the package.
+
+	TEST68.ASM	The entire instruction set of the 6801 CPU to use in
+			testing the 6801 cross-assembler.
+
+	A18.DOC		The manual for the 1805A cross-assembler.  This file
+			can be printed with the following command line under
+			CP/M-80:
+
+				A>pip lst:=a18.doc[t8]
+
+	A18.H		The source files for the 1805A cross-assembler.  The
+	A18.C		file A18.H also contains compile, assemble, and link
+	A18EVAL.C	instructions for all compilers that I have used with
+	A18UTIL.C	the package or that users have told me how to use with
+			the package.
+
+	TEST18.ASM	The entire instruction set of the 1805A processor to
+			use in testing the 1805A cross-assembler.
+
+	A685.DOC	The manual for the 6805 cross-assembler.  This file
+			can be printed with the following command line under
+			CP/M-80:
+
+				A>pip lst:=a685.doc[t8]
+
+	A685.H		The source files for the 6805 cross-assembler.  The
+	A685.C		file A685.H also contains compile, assemble, and link
+	A685EVAL.C	instructions for all compilers that I have used with
+	A685UTIL.C	the package or that users have told me how to use with
+			the package.
+
+	TEST685.ASM	The entire instruction set of the 6805 processor to
+			use in testing the 6805 cross-assembler.
+
+	HEXTOS.C	A conversion utility to convert Intel hex object files
+			to Motorola S-record object files.  The program's
+			documentation is at the top of its source file.
+
+     I not only wrote these pieces of software originally and rewrote them in
+"portable" C for all of you UNIX and IBM-PC users out there, but I am also the
+librarian for the disk, and as such, I am responsible for maintaining the
+packages.  I can only do this with YOUR help.  During the re-write, I noticed a
+few bugs in the BDS C versions.  These were never reported to me by any of you
+users, so I never knew to fix them.  PLEASE report bugs to me promptly so that
+I can get them fixed.  I am only a letter or a phone call away.
+
+     The lists of compile, assemble, and link instructions for the packages are
+limited by my personal experience if YOU do not contribute.  In particular, I
+have no access to a real UNIX system nor to an IBM-PC of any kind with any of
+its dozen or so C compilers.  I need YOU to tell me how to use the package with
+these systems and others.
+
+     Once the first cross-assembler (the 6801 package) is written, adapting it
+to other 8-bit or 4-bit processors (like the 1805A) is easy.  In fact, I once
+adapted one of the BDS C versions to a 12-bit processor (the PIC1650).  It only
+takes a couple of evenings for me to do it. What processors should be next, if
+any?  Get your votes in, either to me or to the Users' Group.  Otherwise, the
+selection of cross-assemblers will reflect only my needs, not yours.
+
+     Having the author double as the librarian allows this disk to be a living,
+growing entity, but its growth will be stunted by my lack of resources if YOU
+do not contribute your share.  Speak up, for everybody's sake!
+
+						William C. Colley, III
+						14 Hawthorne Drive
+						Oberlin, OH 44074
+
+						ph (216)288-1122 x469 (day)
+						   (216)775-3680      (nite)
+ a real UNIX system nor to an IBM-PC of any kind with any of
+its dozen or so C compiler
