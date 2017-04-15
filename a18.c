@@ -83,7 +83,7 @@ TOKEN token;
 /*  to the line assembler, feeds the result to the listing and hex file	*/
 /*  drivers, and cleans everything up at the end of the run.		*/
 
-static int done, extend, ifsp, off;
+int done, extend, ifsp, off;
 
 void main(argc,argv)
 int argc;
@@ -157,10 +157,10 @@ char **argv;
 /*  analyzer, respectively.  It fills a buffer with the machine code	*/
 /*  bytes and returns nothing.						*/
 
-static char label[MAXLINE];
-static int ifstack[IFDEPTH] = { ON };
+char label[MAXLINE];
+int ifstack[IFDEPTH] = { ON };
 
-static OPCODE *opcod;
+OPCODE *opcod;
 
 void asm_line()
 {
@@ -209,12 +209,12 @@ void asm_line()
     return;
 }
 
-static void flush()
+void flush()
 {
     while (popc() != '\n');
 }
 
-static void do_label()
+void do_label()
 {
     SCRATCH SYMBOL *l;
     SYMBOL *find_symbol(), *new_symbol();
@@ -238,7 +238,7 @@ static void do_label()
     }
 }
 
-static void normal_op()
+void normal_op()
 {
     SCRATCH unsigned attrib, *objp, operand;
     unsigned expr();
@@ -267,7 +267,7 @@ static void normal_op()
 			    *(objp - 1) += operand;  attrib &= ~(REGTYP);
 			    break;
 
-	    case NULL:	    switch (attrib & NUMTYP) {
+	    case 0:	    switch (attrib & NUMTYP) {
 				case SIXTN:	*objp++ = high(operand);
 						*objp = low(operand);
 						break;
@@ -291,7 +291,7 @@ static void normal_op()
     }
 }
 
-static void pseudo_op()
+void pseudo_op()
 {
     SCRATCH char *s;
     SCRATCH unsigned *o, u;
@@ -479,4 +479,4 @@ static void pseudo_op()
     }
     return;
 }
-
+

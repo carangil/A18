@@ -450,4 +450,3 @@ int newline()
     }
     return FALSE;
 }
-

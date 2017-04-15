@@ -94,7 +94,7 @@ unsigned expr()
     return bad ? 0 : u;
 }
 
-static unsigned eval(pre)
+unsigned eval(pre)
 unsigned pre;
 {
     register unsigned op, u, v;
@@ -193,7 +193,7 @@ unsigned pre;
     }
 }
 
-static void exp_error(c)
+void exp_error(c)
 char c;
 {
     forwd = bad = TRUE;  error(c);
@@ -308,7 +308,7 @@ opr2:		    token.attr = BINARY + RELAT + OPR;
     return &token;
 }
 
-static void make_number(base)
+void make_number(base)
 unsigned base;
 {
     SCRATCH char *p;
@@ -333,19 +333,19 @@ char c;
 	c == '%' || c == '&' || c == '.' || c == ':' || c == '?';
 }
 
-static int isnum(c)
+int isnum(c)
 char c;
 {
     return c >= '0' && c <= '9';
 }
 
-static int ishex(c)
+int ishex(c)
 char c;
 {
     return isnum(c) || ((c = toupper(c)) >= 'A' && c <= 'F');
 }
 
-static int isalnum(c)
+int isalnum(c)
 char c;
 {
     return isalph(c) || isnum(c);
@@ -442,4 +442,3 @@ int newline()
     }
     return FALSE;
 }
-

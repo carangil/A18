@@ -193,10 +193,12 @@ Aztec CII compiler, so I didn't bother to support it at all.
 */
 
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 /*  Comment out all but the line containing the name of your compiler:	*/
 
-#define		AZTEC_C		1
+/* #define	AZTEC_C		1					*/
 /* #define	CI_C86		1					*/
 /* #define	ECO_C		1					*/
 /* #define	HP_UX		1					*/
@@ -234,7 +236,11 @@ Aztec CII compiler, so I didn't bother to support it at all.
 /*  varible is made static below, but you might want to try register	*/
 /*  instead.								*/
 
+#ifdef MODERN
+#define SCRATCH
+#else
 #define	SCRATCH		static
+#endif
 
 /*  A slow, but portable way of cracking an unsigned into its various	*/
 /*  component parts:							*/
@@ -402,4 +408,4 @@ typedef struct {
 /*  Utility package (A18UTIL.C) hex file output routines:		*/
 
 #define	HEXSIZE		32
-
+

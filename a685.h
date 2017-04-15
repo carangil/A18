@@ -385,4 +385,3 @@ typedef struct {
 /*  Utility package (A685UTIL.C) hex file output routines:		*/
 
 #define	HEXSIZE		32
-

@@ -1,3 +1,22 @@
+This is a very old piece of software found in the C User's Group Archive.
+
+Located here:
+   https://archive.org/details/C_Users_Group_Library_Walnut_Creek_August_1994
+
+The vast majority of this Git repo is taken directly from there.  I have made
+some minor changes.  I release any of my changes under the original terms 
+William Colley set forth.  All future contributors to this project should do
+the same.
+
+Notes:
+
+- My interest in this code centers around the 1802 processor.  I have not tested
+  the 68xx assembler, but provide the original source here, as this is hard to 
+  find.
+
+- This code is written in K&R C.  Some minor things have been changed to make it
+  compile on gcc without a lot of complaint.
+
 /*
 	HEADER:		CUG149;
 	TITLE:		Cross-Assemblers (Portable);
@@ -101,5 +120,3 @@ do not contribute your share.  Speak up, for everybody's sake!
 
 						ph (216)288-1122 x469 (day)
 						   (216)775-3680      (nite)
- a real UNIX system nor to an IBM-PC of any kind with any of
-its dozen or so C compiler
