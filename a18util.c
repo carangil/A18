@@ -78,7 +78,9 @@ This module contains the following utility packages:
 /*  that calloc() returns pointer to char as an MSDOS far pointer is	*/
 /*  NOT compatible with the int type as is usually the case.		*/
 
+#ifndef MODERN
 char *calloc();
+#endif
 
 /*  Get access to global mailboxes defined in A18.C:			*/
 
@@ -134,7 +136,7 @@ char *nam;
 OPCODE *find_code(nam)
 char *nam;
 {
-    OPCODE *bsearch();
+    OPCODE *mybsearch();
 
     static OPCODE opctbl[] = {
 	{ 1,					0x74,	"ADC"	},
@@ -275,7 +277,7 @@ char *nam;
 	{ IMMED + 2,				0xfb,	"XRI"	}
     };
 
-    return bsearch(opctbl,opctbl + (sizeof(opctbl) / sizeof(OPCODE)),nam);
+    return mybsearch(opctbl,opctbl + (sizeof(opctbl) / sizeof(OPCODE)),nam);
 }
 
 /*  Operator table search routine.  This routine pats down the		*/
@@ -285,7 +287,7 @@ char *nam;
 OPCODE *find_operator(nam)
 char *nam;
 {
-    OPCODE *bsearch();
+    OPCODE *mybsearch();
 
     static OPCODE oprtbl[] = {
 	{ UNARY  + UOP1  + OPR,		'$',		"$"	},
@@ -306,10 +308,14 @@ char *nam;
 	{ BINARY + LOG2  + OPR,		XOR,		"XOR"	}
     };
 
-    return bsearch(oprtbl,oprtbl + (sizeof(oprtbl) / sizeof(OPCODE)),nam);
+    return mybsearch(oprtbl,oprtbl + (sizeof(oprtbl) / sizeof(OPCODE)),nam);
 }
 
-OPCODE *bsearch(lo,hi,nam)
+
+int ustrcmp(char *s, char *t);
+
+
+OPCODE *mybsearch(lo,hi,nam)
 OPCODE *lo, *hi;
 char *nam;
 {

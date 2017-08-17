@@ -196,6 +196,11 @@ Aztec CII compiler, so I didn't bother to support it at all.
 #include <string.h>
 #include <stdlib.h>
 
+#ifdef MODERN
+#include <ctype.h>
+int popc();
+#endif
+
 /*  Comment out all but the line containing the name of your compiler:	*/
 
 /* #define	AZTEC_C		1					*/
@@ -409,3 +414,4 @@ typedef struct {
 
 #define	HEXSIZE		32
 
+void error(char code);

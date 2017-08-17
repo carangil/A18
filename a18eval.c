@@ -68,6 +68,11 @@ arithmetic expressions.
 
 #include "a18.h"
 
+int myisalnum(char c);
+int ishex(char c);
+int isnum(char c);
+int isalph(char c);
+
 /*  Get access to global mailboxes defined in A68.C:			*/
 
 extern char line[];
@@ -105,7 +110,7 @@ unsigned pre;
 	u = op = lex() -> valu;
 	switch (token.attr & TYPE) {
 	    case SEP:	if (pre != START) unlex();
-	    case EOL:	exp_error('E');  return;
+	    case EOL:	exp_error('E');printf(" EXPRESSION ERROR 1\n");  return 0;
 
 	    case OPR:	if (!(token.attr & UNARY)) { exp_error('E');  break; }
 			u = (op == '$' ? pc :
@@ -130,7 +135,7 @@ unsigned pre;
 					    return u;
 
 				case STR:
-				case VAL:   exp_error('E');  break;
+				case VAL:   exp_error('E');  printf(" EXPRESSION ERROR 2\n"); return 0; break;
 
 				case OPR:   if (!(token.attr & BINARY)) {
 						exp_error('E');  break;
@@ -308,6 +313,8 @@ opr2:		    token.attr = BINARY + RELAT + OPR;
     return &token;
 }
 
+
+
 void make_number(base)
 unsigned base;
 {
@@ -345,7 +352,7 @@ char c;
     return isnum(c) || ((c = toupper(c)) >= 'A' && c <= 'F');
 }
 
-int isalnum(c)
+int myisalnum(c)
 char c;
 {
     return isalph(c) || isnum(c);
@@ -369,7 +376,7 @@ char *s;
     void pushc(), trash();
 
     trash();
-    for (; isalnum(*s = popc()); ++s);
+    for (; myisalnum(*s = popc()); ++s);
     pushc(*s);  *s = '\0';
     return;
 }

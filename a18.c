@@ -94,10 +94,11 @@ char **argv;
     void asm_line();
     void lclose(), lopen(), lputs();
     void hclose(), hopen(), hputc();
-    void error(), fatal_error(), warning();
+    void fatal_error(), warning();
 
     printf("1802/1805A Cross-Assembler (Portable) Ver 2.5\n");
-    printf("Copyright (c) 1985 William C. Colley, III\n\n");
+    printf("Copyright (c) 1985 William C. Colley, III\n");
+    printf("Copyright (c) 2017 Mark W. Sherman\n\n");
 
     while (--argc > 0) {
 	if (**++argv == '-') {
@@ -168,7 +169,7 @@ void asm_line()
     int isalph(), popc();
     OPCODE *find_code(), *find_operator();
     void do_label(), flush(), normal_op(), pseudo_op();
-    void error(), pops(), pushc(), trash();
+    void pops(), pushc(), trash();
 
     address = pc;  bytes = 0;  eject = forwd = listhex = FALSE;
     for (i = 0; i < BIGINST; obj[i++] = NOP);
@@ -218,7 +219,7 @@ void do_label()
 {
     SCRATCH SYMBOL *l;
     SYMBOL *find_symbol(), *new_symbol();
-    void error();
+//    void error();
 
     if (label[0]) {
 	listhex = TRUE;
@@ -243,7 +244,7 @@ void normal_op()
     SCRATCH unsigned attrib, *objp, operand;
     unsigned expr();
     TOKEN *lex();
-    void do_label(), error(), unlex();
+    void do_label(), unlex();
 
     do_label();
     bytes = (attrib = opcod -> attr) & BYTES;
@@ -299,7 +300,7 @@ void pseudo_op()
     unsigned expr();
     SYMBOL *find_symbol(), *new_symbol();
     TOKEN *lex();
-    void do_label(), error(), fatal_error(), hseek(), unlex();
+    void do_label(),  fatal_error(), hseek(), unlex();
 
     o = obj;
     switch (opcod -> valu) {
@@ -387,7 +388,7 @@ void pseudo_op()
 	case IF:    if (++ifsp == IFDEPTH) fatal_error(IFOFLOW);
 		    address = expr();
 		    if (forwd) { error('P');  address = TRUE; }
-		    if (off) { listhex = FALSE;  ifstack[ifsp] = NULL; }
+		    if (off) { listhex = FALSE;  ifstack[ifsp] = 0; }
 		    else {
 			ifstack[ifsp] = address ? ON : OFF;
 			if (!address) off = TRUE;
