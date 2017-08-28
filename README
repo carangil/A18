@@ -3,10 +3,16 @@ This is a very old piece of software found in the C User's Group Archive.
 Located here:
    https://archive.org/details/C_Users_Group_Library_Walnut_Creek_August_1994
 
-The vast majority of this Git repo is taken directly from there.  I have made
-some minor changes.  I release any of my changes under the original terms 
-William Colley set forth.  All future contributors to this project should do
-the same.
+The vast majority of this Git repo is taken directly from there.  The first
+commit is an exact copy from the CUG archive, with the second commit removing
+trailing characters leftover from the CP/M filesystem.  Later commits make
+the code compile without warning on GCC, and add some new features.
+
+I have contacted William Colley, and he has granted permission for his code to
+be released under GPL.  My modifications are licensed the same.  The GPL
+supercedes all other copyright notices noted in the code or manuals.  (Other 
+versions of the assembler that exist that were derived from other copies
+of CUG-149 are, of course,  not bound by the GPL. )
 
 Notes:
 
