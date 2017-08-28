@@ -75,6 +75,7 @@ char errcode, line[MAXLINE + 1], title[MAXLINE];
 int pass = 0;
 int eject, filesp, forwd, listhex;
 unsigned address, bytes, errors, listleft, obj[MAXLINE], pagelen, pc;
+int binary=0;
 FILE *filestk[FILES], *source;
 TOKEN token;
 
@@ -94,6 +95,7 @@ char **argv;
     void asm_line();
     void lclose(), lopen(), lputs();
     void hclose(), hopen(), hputc();
+    void rclose(), ropen(), rputc();
     void fatal_error(), warning();
 
     printf("1802/1805A Cross-Assembler (Portable) Ver 2.5\n");
@@ -116,6 +118,17 @@ char **argv;
 			    }
 			    hopen(*argv);
 			    break;
+                            
+                case 'R':   if (!*++*argv) {
+				if (!--argc) { warning(BADOPT);  break; }
+				else ++argv;
+			    }
+			    ropen(*argv);
+			    break;
+
+                case 'B' :
+			    binary=1;
+                            break;
 
 		default:    warning(BADOPT);
 	    }
@@ -140,12 +153,13 @@ char **argv;
 	    pc = word(pc + bytes);
 	    if (pass == 2) {
 		lputs();
-		for (o = obj; bytes--; hputc(*o++));
+		for (o = obj; bytes--;  hputc(*o++)) 
+                        rputc(*o);
 	    }
 	}
     }
 
-    fclose(filestk[0]);  lclose();  hclose();
+    fclose(filestk[0]);  lclose();  hclose();  rclose();
 
     if (errors) printf("%d Error(s)\n",errors);
     else printf("No Errors\n");
@@ -300,7 +314,7 @@ void pseudo_op()
     unsigned expr();
     SYMBOL *find_symbol(), *new_symbol();
     TOKEN *lex();
-    void do_label(),  fatal_error(), hseek(), unlex();
+    void do_label(),  fatal_error(), hseek(), rseek(), unlex();
 
     o = obj;
     switch (opcod -> valu) {
@@ -309,7 +323,7 @@ void pseudo_op()
 		    if (forwd) error('P');
 		    else {
 			pc = u;
-			if (pass == 2) hseek(pc);
+			if (pass == 2) {hseek(pc); rseek(pc); }
 		    }
 		    break;
 
@@ -353,7 +367,7 @@ void pseudo_op()
 		    else {
 			done = eject = TRUE;
 			if (pass == 2 && (lex() -> attr & TYPE) != EOL) {
-			    unlex();  hseek(address = expr());
+			    unlex();  hseek(address = expr()); rseek(address);
 			}
 			if (ifsp) error('I');
 		    }
@@ -417,13 +431,13 @@ void pseudo_op()
 		    if (forwd) error('P');
 		    else {
 			pc = address = u;
-			if (pass == 2) hseek(pc);
+			if (pass == 2) { hseek(pc); rseek(pc); }
 		    }
 		    do_label();
 		    break;
 
 	case PAGE:  address = pc = (pc + 255) & 0xff00;
-		    if (pass == 2) hseek(pc);
+		    if (pass == 2) { hseek(pc); rseek(pc); }
 		    do_label();
 		    break;
 

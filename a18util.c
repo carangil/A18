@@ -367,25 +367,81 @@ char *nam;
 /*  buffer obj into a line of the listing.  If the disk fills up, a	*/
 /*  fatal error occurs.							*/
 
+extern int binary;
+
 void lputs()
 {
-    SCRATCH int i, j;
+    int byteline=1;
+    SCRATCH int i, j, k;
     SCRATCH unsigned *o;
     void check_page(), fatal_error();
+    char bin[9];
+    bin[8]='\0';
+    unsigned char bb=0;
+    int didline;
 
     if (list) {
 	i = bytes;  o = obj;
 	do {
-	    fprintf(list,"%c  ",errcode);
+        
+    	fprintf(list,"%c  ",errcode);
+        didline=0;
+
 	    if (listhex) {
-		fprintf(list,"%04x  ",address);
-		for (j = 4; j; --j) {
-		    if (i) { --i;  ++address;  fprintf(list," %02x",*o++); }
-		    else fprintf(list,"   ");
-		}
+            for (j = 4; j; --j) {
+                
+
+                if (((j==4)&&i) || (byteline&&i))  {
+                    if (j!=4)
+                           fprintf(list, "   ");
+
+                    fprintf(list,"%04x  ",address);
+                }
+
+                
+
+
+                if (i) {
+
+
+                     --i;  ++address;
+                     bb=*o;
+
+                     fprintf(list," %02x",*o++); 
+
+                      if (binary){
+                          fprintf(list, ":",bb);
+                          for (k=0;k<8;k++){ 
+                              if (bb&0x80)
+                                  fprintf(list, "1");
+                              else
+                                  fprintf(list, "0");
+                              bb=bb<<1;
+
+                          }
+                      }
+
+
+                     if (byteline) {
+                         if (j==4)
+                         {
+                             fprintf(list," %s", line);
+                             didline=1;
+                         }
+                         else
+                             fprintf(list,"\n");
+                     }
+                }
+                else  if (!byteline) 
+                       fprintf(list,"   ");
+            }
 	    }
 	    else fprintf(list,"%18s","");
-	    fprintf(list,"   %s",line);  strcpy(line,"\n");
+
+	    if (!didline)
+               fprintf(list,"   %s",line);  
+
+        strcpy(line,"\n");
 	    check_page();
 	    if (ferror(list)) fatal_error(DSKFULL);
 	} while (listhex && i);
@@ -442,6 +498,55 @@ void check_page()
     return;
 }
 
+static FILE *raw = NULL;
+static int rawstart=-1;
+/* Raw file output routines*/ 
+void ropen(nam)
+char *nam;
+{
+    FILE *fopen();
+    void fatal_error(), warning();
+
+    if (raw) warning(TWOHEX);
+    else if (!(raw = fopen(nam,"wb"))) fatal_error(HEXOPEN);
+    return;
+}
+
+void rputc(c)
+unsigned c;
+{
+    if (raw)
+            fputc(c, raw);
+    
+    return;
+}
+
+void rseek(a)
+unsigned a;
+{
+    if (rawstart == -1) {
+       
+        rawstart = a;        
+        return;
+    }
+     printf(" Seek to %d\n",a); 
+    if (raw)
+            fseek(raw, a - rawstart, SEEK_SET);
+
+    return;
+}
+
+void rclose()
+{
+   if (raw)
+           fclose(raw);
+   
+   raw = NULL;
+   
+   return;
+}
+
+
 /*  Buffer storage for hex output file.  This allows this module to	*/
 /*  do all of the required buffering and record forming without the	*/
 /*  main routine having to fool with it.				*/
@@ -451,6 +556,7 @@ static unsigned cnt = 0;
 static unsigned addr = 0;
 static unsigned sum = 0;
 static unsigned buf[HEXSIZE];
+
 
 /*  Hex file open routine.  If a hex file is already open, a warning	*/
 /*  occurs.  If the hex file doesn't open correctly, a fatal error	*/
