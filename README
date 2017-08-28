@@ -18,10 +18,18 @@ Notes:
 
 - My interest in this code centers around the 1802 processor.  I have not tested
   the 68xx assembler, but provide the original source here, as this is hard to 
-  find.
+  find.  These files have been moved to 68xx.
 
 - This code is written in K&R C.  Some minor things have been changed to make it
   compile on gcc without a lot of complaint.
+
+- To build type 'make' and it should build if you have GCC available.  I have't
+  created a 'configure' script, or anything like that, but my guess is if you
+  are trying to assemble code for a 40 year old CPU, you probably know how to 
+  modify the Makefile.
+
+- I have not tried to build or use the hextos utility, as I currently have no
+  use for SREC format, and would be unsure if it is correct.
 
 /*
 	HEADER:		CUG149;
