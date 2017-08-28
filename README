@@ -12,7 +12,10 @@ I have contacted William Colley, and he has granted permission for his code to
 be released under GPL.  My modifications are licensed the same.  The GPL
 supercedes all other copyright notices noted in the code or manuals.  (Other 
 versions of the assembler that exist that were derived from other copies
-of CUG-149 are, of course,  not bound by the GPL. )
+of CUG-149 are, of course, not bound by the GPL. )
+
+Herb Johnson maintains an different (non-GPL) version on his webpage here:
+    http://www.retrotechnology.com/memship/a18.html
 
 Notes:
 
@@ -30,6 +33,9 @@ Notes:
 
 - I have not tried to build or use the hextos utility, as I currently have no
   use for SREC format, and would be unsure if it is correct.
+
+
+The original README from the CUG Archive follows.
 
 /*
 	HEADER:		CUG149;
