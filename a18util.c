@@ -368,10 +368,11 @@ char *nam;
 /*  fatal error occurs.							*/
 
 extern int binary;
+extern int octal;
+extern int byteline;
 
 void lputs()
 {
-    int byteline=1;
     SCRATCH int i, j, k;
     SCRATCH unsigned *o;
     void check_page(), fatal_error();
@@ -395,7 +396,9 @@ void lputs()
                     if (j!=4)
                            fprintf(list, "   ");
 
-                    fprintf(list,"%04x  ",address);
+                    if (octal)
+                         fprintf(list,"%06o  ",address);
+                    else fprintf(list,"%04x  ",address);
                 }
 
                 
@@ -407,7 +410,8 @@ void lputs()
                      --i;  ++address;
                      bb=*o;
 
-                     fprintf(list," %02x",*o++); 
+                     if (octal) fprintf(list," %03o",*o++); 
+                     else fprintf(list," %02x",*o++); 
 
                       if (binary){
                           fprintf(list, ":",bb);
@@ -524,12 +528,16 @@ unsigned c;
 void rseek(a)
 unsigned a;
 {
+    void fatal_error();
+    
     if (rawstart == -1) {
        
         rawstart = a;        
         return;
     }
-     printf(" Seek to %d\n",a); 
+    if (a<rawstart) {
+            fatal_error("Invalid SEEK");
+    }
     if (raw)
             fseek(raw, a - rawstart, SEEK_SET);
 

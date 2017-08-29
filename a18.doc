@@ -18,14 +18,15 @@
 
 	SYSTEM:		CP/M-80, CP/M-86, HP-UX, MSDOS, PCDOS, QNIX;
 	COMPILERS:	Aztec C86, Aztec CII, CI-C86, Eco-C, Eco-C88, HP-UX,
-			Lattice C, Microsoft C,	QNIX C;
+			Lattice C, Microsoft C,	QNIX C, GCC Linux;
 
 	WARNINGS:	"This program has compiled successfully on 2 UNIX
 			compilers, 5 MSDOS compilers, and 2 CP/M compilers.
 			A port to BDS C would be extremely difficult, but see
 			volume CUG113.  A port to Toolworks C is untried."
 
-	AUTHORS:	William C. Colley III;
+	AUTHORS:	William C. Colley III,
+                        Mark W. Sherman;
 */
 
 
@@ -45,14 +46,14 @@
                       1802/1805A Cross-Assembler (Portable)
 
 
-                                   Version 2.5
+                                   Version 2.5.1
 
 
                     Copyright (c) 1985 William C. Colley, III
+                    Copyright (c) 2017 Mark W. Sherman
 
-
-
-
+                    
+                    
 
 
                             The manual such as it is.
@@ -67,17 +68,17 @@
 
 
 
-        Legal Note:    This package may be used for any commercial or 
-                       non-commercial purpose.  It may be copied and 
-                       distributed freely provided that any fee charged 
-                       by the distributor of the copy does not exceed the 
-                       sum of:  1) the cost of the media the copy is 
-                       written on,  2) any required costs of shipping the 
-                       copy, and  3) a nominal handling fee.  Any other 
-                       distribution requires the written permission of 
-                       the author.  Also, the author's copyright notices 
-                       shall not be removed from the program source, the 
-                       program object, or the program documentation.
+        Legal Note:    This software is bound to the terms on GPLv2. 
+
+                       See file LICENSE for details
+                      
+                      
+                      
+                      
+                      
+                      
+                      
+                      
 
 
 
@@ -311,7 +312,7 @@
                                                      listing:  none
                                                      object:   none
 
-             a18 test18.asm -l test18.prn            source:   test18.asm
+             a18 test18.asm -L test18.prn            source:   test18.asm
                                                      listing:  test18.prn
                                                      object:   none
 
@@ -319,7 +320,7 @@
                                                      listing:  none
                                                      object:   test18.hex
 
-             a18 test18.asm -l test18.prn -o test18.hex
+             a18 test18.asm -L test18.prn -o test18.hex
                                                      source:   test18.asm
                                                      listing:  test18.prn
                                                      object:   test18.hex
@@ -332,8 +333,68 @@
 
 
 
-                                        3
+                                       3a
 
+           In addition, the -L option also has a few options of it's own.
+       The additional options are specified by adding extra letters to -L,
+       depending on what you want it to do.  
+        
+        The following example will show alternate printouts for this line:
+        
+                0452   68 c9 01 00   		RLDI	R9, START
+       
+                o: use octal instead of hexidecimal for address and disassembly
+                a18 test18.asm   -Lo test.prn -o test.hex
+             
+                002122   150 311 001 000   		RLDI	R9, START
+             
+                This may be combined with '1' to create one octal byte per line:
+                
+                a18 test18.asm   -Lo1 test.prn -o test.hex
+                
+                002122   150 		RLDI	R9, START
+                002123   311
+                002124   001
+                002125   000
+                
+                This may be of use to octal-oriented people who are programming
+                via switches.  (ex-Altair users, etc)
+             
+      (number) 1: Break out each byte onto its own line
+             
+                a18 test18.asm   -L1 test.prn -o test.hex
+             
+                0452   68 		RLDI	R9, START
+                0453   c9
+                0454   01
+                0455   00
+             
+             B: Also show disassembly bytes in Binary.  Best combined with '1'
+               
+                a18 test18.asm   -LB1 test.prn -o test.hex
+
+                0452   68:01101000 		RLDI	R9, START
+                0453   c9:11001001
+                0454   01:00000001
+                0455   00:00000000
+                
+                The intention of Binary, one byte-per-line format is easier 
+                to read and enter via front-panel binary switches.
+             
+        Raw file output
+        
+        In addition to -o for hex file output, -b may be used to output a raw 
+        binary file.  The file will start at the first ORG specified in the 
+        source file.  All later ORGs will be relative to that first offset.  (If 
+        file started at ORG 0x100, a later ORG to 0x120 will be at offset 0x20 
+        in the file)  If a later ORG 'rewinds' the stream back to before their
+        file started, an fatal error will occur.
+
+        a18 test18.asm   -Lo1 test.prn -o test.hex -B test.bin
+       
+          Produces a binary file test.bin, hex file test.hex, and octal test.prn
+          
+                                        3b
 
 
         2.0  Format of Cross-Assembler Source Lines

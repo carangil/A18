@@ -75,7 +75,11 @@ char errcode, line[MAXLINE + 1], title[MAXLINE];
 int pass = 0;
 int eject, filesp, forwd, listhex;
 unsigned address, bytes, errors, listleft, obj[MAXLINE], pagelen, pc;
-int binary=0;
+
+int binary = 0;
+int octal = 0;
+int byteline = 0;
+
 FILE *filestk[FILES], *source;
 TOKEN token;
 
@@ -105,35 +109,48 @@ char **argv;
     while (--argc > 0) {
 	if (**++argv == '-') {
 	    switch (toupper(*++*argv)) {
-		case 'L':   if (!*++*argv) {
-				if (!--argc) { warning(NOLST);  break; }
-				else ++argv;
-			    }
-			    lopen(*argv);
-			    break;
-
+		case 'L':
+                        
+                        while (* ++*argv) {
+                           
+                           switch(toupper(**argv)) {
+                                case 'O':  octal = 1;  break;   
+                                   
+                                case 'B':  binary = 1;  break;
+                           
+                                case '1' : byteline = 1; break;
+                           
+                                default: warning(BADOPT);
+                           }
+                        }
+                           
+                        if (!--argc) { warning(NOLST);  break; }
+                        else ++argv;
+                        
+                        lopen(*argv);
+                        break;
+                            
+                /*Specify output file (HEX)*/
+                
 		case 'O':   if (!*++*argv) {
 				if (!--argc) { warning(NOHEX);  break; }
 				else ++argv;
 			    }
 			    hopen(*argv);
 			    break;
-                            
-                case 'R':   if (!*++*argv) {
+                
+                /*Specify binary output file */
+                case 'B':   if (!*++*argv) {
 				if (!--argc) { warning(BADOPT);  break; }
 				else ++argv;
 			    }
 			    ropen(*argv);
 			    break;
-
-                case 'B' :
-			    binary=1;
-                            break;
-
+  
 		default:    warning(BADOPT);
 	    }
 	}
-	else if (filestk[0]) warning(TWOASM);
+	else if (filestk[0]) {warning(TWOASM); printf(" file is %s\n", *argv);}
 	else if (!(filestk[0] = fopen(*argv,"r"))) fatal_error(ASMOPEN);
     }
     if (!filestk[0]) fatal_error(NOASM);
