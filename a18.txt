@@ -1,0 +1,1329 @@
+/*
+	HEADER:		CUG149;
+	TITLE:		1805A Cross-Assembler (Portable);
+	FILENAME:	A18.DOC;
+	VERSION:	2.5;
+	DATE:		08/27/1988;
+
+	DESCRIPTION:	"This program lets you use your computer to assemble
+			code for the RCA 1802, 1804, 1805, 1805A, 1806, and
+			1806A microprocessors.  The program is written in
+			portable C rather than BDS C.  All assembler features
+			are supported except relocation, linkage, and macros.";
+
+	KEYWORDS:	Software Development, Assemblers, Cross-Assemblers,
+			RCA, CDP1802, CDP1805;
+
+	SEE-ALSO:	CUG113, 1802 Cross-Assembler;
+
+	SYSTEM:		CP/M-80, CP/M-86, HP-UX, MSDOS, PCDOS, QNIX;
+	COMPILERS:	Aztec C86, Aztec CII, CI-C86, Eco-C, Eco-C88, HP-UX,
+			Lattice C, Microsoft C,	QNIX C, GCC Linux;
+
+	WARNINGS:	"This program has compiled successfully on 2 UNIX
+			compilers, 5 MSDOS compilers, and 2 CP/M compilers.
+			A port to BDS C would be extremely difficult, but see
+			volume CUG113.  A port to Toolworks C is untried."
+
+	AUTHORS:	William C. Colley III,
+                Mark W. Sherman,
+                Eric H. Matt;
+*/
+---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                      1802/1805A Cross-Assembler (Portable)
+
+
+                                   Version 2.5.1
+
+
+                    Copyright (c) 1985 William C. Colley, III
+                    Copyright (c) 2017 Mark W. Sherman
+
+                    
+                    
+
+
+                            The manual such as it is.
+
+
+
+
+
+
+
+
+
+
+
+        Legal Note:    This software is bound to the terms on GPLv2. 
+
+                       See file LICENSE for details
+                      
+                      
+                      
+                      
+                      
+                      
+                      
+                      
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------------
+
+
+                Note to Users of Previous Versions of the Package
+
+             This version of the 1802/1805A Cross-Assembler package is a 
+        total rewrite of the old BDS C version.  During the recoding, a 
+        few new "bells and whistles" found their way into the program.  
+        They are:
+
+             1)   Labels can now be as long as an entire line, and all 
+                  characters are significant.  In older versions, only 8 
+                  characters were significant.
+
+             2)   Listing control has been added to the output routine.  
+                  The listing can be broken up into pages and a running 
+                  header can be added to the top of each page.  See the 
+                  TITL and EJCT pseudo-ops for details.
+
+             3)   Default extensions for the source and object (hex) 
+                  files are no longer supplied.
+
+             4)   The predefined labels R0-RF are no longer predefined, 
+                  so you will have to add a few lines to programs 
+                  designed for the older versions.
+
+             5)   Include files are now supported and may be nested.
+
+             Alas, as the sage says, "There ain't no such thing as a free 
+        lunch."  Massive internal changes had to be made to divorce the 
+        program from the CP/M-80 environment.  These changes, the fact 
+        that full-featured, 8-bit C compilers generate less efficient 
+        code than BDS C, and the fact that I have leaned on the over-
+        powered, slow library function printf() heavily have caused the 
+        package to run about a factor of 4 slower than the older 
+        versions.  The package also takes 3-6K more disk space to store 
+        than it used to take.
+
+             On the plus side, however, the code is written in "portable" 
+        C, so all of the UNIX users, and the new crop of IBM-PC users 
+        should be able to compile and run the package almost without 
+        modification.  The internal structure of the package is cleaner 
+        than ever, so it should be very easy to hack on and turn into 
+        cross-assemblers for other 8-bit processors.  Finally, the source 
+        code has shrivelled almost to nothing since many tasks have been 
+        off-loaded onto standard library functions, so the need to 
+        "squeeze" the source code is gone.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------------
+
+
+                                Table of Contents
+
+        1.0  How to Use the Cross-Assembler Package ..................  3
+        2.0  Format of Cross-Assembler Source Lines ..................  4
+             2.1  Labels .............................................  5
+             2.2  Numeric Constants ..................................  5
+             2.3  String Constants ...................................  5
+             2.4  Expressions ........................................  6
+        3.0  Machine Opcodes .........................................  7
+             3.1  Opcodes -- No Arguments ............................  7
+             3.2  Opcodes -- One Register Argument ...................  7
+             3.3  Opcodes -- One I/O Port Argument ...................  8
+             3.4  Opcodes -- One Immediate Argument ..................  8
+             3.5  Opcodes -- One Memory Argument .....................  8
+             3.6  Opcodes -- Two Arguments ...........................  8
+             3.7  Opcodes -- Short Branches ..........................  8
+        4.0  Pseudo Opcodes ..........................................  8
+             4.1  Pseudo-ops -- BLK ..................................  9
+             4.2  Pseudo-ops -- BYTE .................................  9
+             4.3  Pseudo-ops -- CPU ..................................  9
+             4.4  Pseudo-ops -- EJCT .................................  9
+             4.5  Pseudo-ops -- END .................................. 10
+             4.6  Pseudo-ops -- EQU .................................. 10
+             4.7  Pseudo-ops -- IF, ELSE, ENDI ....................... 10
+             4.8  Pseudo-ops -- INCL ................................. 11
+             4.9  Pseudo-ops -- LOAD ................................. 11
+             4.10 Pseudo-ops -- ORG .................................. 12
+             4.11 Pseudo-ops -- PAGE ................................. 12
+             4.12 Pseudo-ops -- SET .................................. 12
+             4.13 Pseudo-ops -- TEXT ................................. 13
+             4.14 Pseudo-ops -- TITL ................................. 13
+             4.15 Pseudo-ops -- WORD ................................. 13
+        5.0  Assembly Errors ......................................... 13
+             5.1  Error * -- Missing Statement ....................... 14
+             5.2  Error ( -- Parenthesis Imbalance ................... 14
+             5.3  Error " -- Missing Quotation Mark .................. 14
+             5.4  Error B -- Branch Target Too Distant ............... 14
+             5.5  Error D -- Illegal Digit ........................... 14
+             5.6  Error E -- Illegal Expression ...................... 14
+             5.7  Error I -- IF-ENDI Imbalance ....................... 15
+             5.8  Error L -- Illegal Label ........................... 15
+             5.9  Error M -- Multiply Defined Label .................. 15
+             5.10 Error O -- Illegal Opcode .......................... 15
+             5.11 Error P -- Phasing Error ........................... 16
+             5.12 Error R -- Illegal Register ........................ 16
+             5.13 Error S -- Illegal Syntax .......................... 16
+             5.14 Error T -- Too Many Arguments ...................... 16
+             5.15 Error U -- Undefined Label ......................... 16
+             5.16 Error V -- Illegal Value ........................... 16
+
+
+
+
+
+
+
+
+                                        1
+---------------------------------------------------------------------------
+
+
+        6.0  Warning Messages ........................................ 17
+             6.1  Warning -- Illegal Option Ignored .................. 17
+             6.2  Warning -- -l Option Ignored -- No File Name ....... 17
+             6.3  Warning -- -o Option Ignored -- No File Name ....... 17
+             6.4  Warning -- Extra Source File Ignored ............... 17
+             6.5  Warning -- Extra Listing File Ignored .............. 17
+             6.6  Warning -- Extra Object File Ignored ............... 17
+        7.0  Fatal Error Messages .................................... 17
+             7.1  Fatal Error -- No Source File Specified ............ 17
+             7.2  Fatal Error -- Source File Did Not Open ............ 18
+             7.3  Fatal Error -- Listing File Did Not Open ........... 18
+             7.4  Fatal Error -- Object File Did Not Open ............ 18
+             7.5  Fatal Error -- Error Reading Source File ........... 18
+             7.6  Fatal Error -- Disk or Directory Full .............. 18
+             7.7  Fatal Error -- File Stack Overflow ................. 18
+             7.7  Fatal Error -- If Stack Overflow ................... 18
+             7.8  Fatal Error -- Too Many Symbols .................... 18
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                        2
+---------------------------------------------------------------------------
+
+
+        1.0  How to Use the Cross-Assembler Package
+
+             First, the question, "What does a cross-assembler do?" needs 
+        to be addressed as there is considerable confusion on this point.  
+        A cross-assembler is just like any other assembler except that it 
+        runs on some CPU other than the one for which it assembles code.  
+        For example, this package assembles 1805A source code into 1805A
+        object code, but it runs on an 8080, a Z-80, an 8088, or whatever 
+        other CPU you happen to have a C compiler for.  The reason that 
+        cross-assemblers are useful is that you probably already have a 
+        CPU with memory, disk drives, a text editor, an operating system, 
+        and all sorts of hard-to-build or expensive facilities on hand.  
+        A cross-assembler allows you to use these facilites to develop 
+        code for an 1805A.
+
+        This program requires one input file (your 1805A source code) and 
+        zero to two output files (the listing and the object).  The input 
+        file MUST be specified, or the assembler will bomb on a fatal 
+        error.  The listing and object files are optional.  If no listing 
+        file is specified, no listing is generated, and if no object file 
+        is specified, no object is generated.  If the object file is 
+        specified, the object is written to this file in "Intel 
+        hexadecimal" format.
+
+             The command line for the cross-assembler looks like this:
+
+                  A18 source_file { >list_file } { -o object_file }
+
+        where the { } indicates that the specified item is optional.
+
+             Some examples are in order:
+
+             a18 test18.asm                          source:   test18.asm
+                                                     listing:  none
+                                                     object:   none
+
+             a18 test18.asm -L test18.prn            source:   test18.asm
+                                                     listing:  test18.prn
+                                                     object:   none
+
+             a18 test18.asm -o test18.hex            source:   test18.asm
+                                                     listing:  none
+                                                     object:   test18.hex
+
+             a18 test18.asm -L test18.prn -o test18.hex
+                                                     source:   test18.asm
+                                                     listing:  test18.prn
+                                                     object:   test18.hex
+
+             a18 test18.asm -b test18.bin            
+                                                     source:   test18.asm
+                                                     listing:  none
+                                                     object:   none
+	                                                 binary:   test18.bin
+
+             a18 test18.asm -L test18.prn -o test18.hex -b text18.bin
+                                                     source:   test18.asm
+                                                     listing:  test18.prn
+                                                     object:   test18.hex
+                                                     binary:   test18.bin
+
+
+             The order in which the source, listing, and object files are 
+        specified does not matter.  Note that no default file name exten-
+        sions are supplied by the assembler as this gives rise to porta-
+        bility problems.
+
+
+
+
+                                       3a
+---------------------------------------------------------------------------
+           In addition, the -L option also has a few options of it's own.
+       The additional options are specified by adding extra letters to -L,
+       depending on what you want it to do.  
+        
+        The following example will show alternate printouts for this line:
+        
+                0452   68 c9 01 00   		RLDI	R9, START
+       
+                o: use octal instead of hexidecimal for address and disassembly
+                a18 test18.asm   -Lo test.prn -o test.hex
+             
+                002122   150 311 001 000   		RLDI	R9, START
+
+             
+                This may be combined with '1' to create one octal byte per line:
+                
+                a18 test18.asm   -Lo1 test.prn -o test.hex
+                
+                002122   150 		RLDI	R9, START
+
+                002123   311
+                002124   001
+                002125   000
+                
+                This may be of use to octal-oriented people who are programming
+                via switches.  (ex-Altair users, etc)
+             
+      (number) 1: Break out each byte onto its own line
+             
+                a18 test18.asm   -L1 test.prn -o test.hex
+             
+                0452   68 		RLDI	R9, START
+
+                0453   c9
+                0454   01
+                0455   00
+             
+             B: Also show disassembly bytes in Binary.  Best combined with '1'
+               
+                a18 test18.asm   -LB1 test.prn -o test.hex
+
+                0452   68:01101000 		RLDI	R9, START
+
+                0453   c9:11001001
+                0454   01:00000001
+                0455   00:00000000
+                
+                The intention of Binary, one byte-per-line format is easier 
+                to read and enter via front-panel binary switches.
+             
+        Raw file output
+        
+        In addition to -o for hex file output, -b may be used to output a raw 
+        binary file.  The file will start at the first ORG specified in the 
+        source file.  All later ORGs will be relative to that first offset.  (If 
+        file started at ORG 0x100, a later ORG to 0x120 will be at offset 0x20 
+        in the file)  If a later ORG 'rewinds' the stream back to before their
+        file started, an fatal error will occur.
+
+        a18 test18.asm   -Lo1 test.prn -o test.hex -B test.bin
+       
+          Produces a binary file test.bin, hex file test.hex, and octal test.prn
+          
+                                        3b
+
+
+        2.0  Format of Cross-Assembler Source Lines
+
+             The source file that the cross-assembler processes into a 
+        listing and an object is an ASCII text file that you can prepare 
+        with whatever editor you have at hand.  The most-significant 
+        (parity) bit of each character is cleared as the character is 
+        read from disk by the cross-assembler, so editors that set this 
+        bit (such as WordStar's document mode) should not bother this 
+        program.  All printing characters, the ASCII TAB character (09H), 
+        and newline character(s) are processed by the assembler.  All 
+        other characters are passed through to the listing file, but are 
+        otherwise ignored.
+
+             The source file is divided into lines by newline char-
+        acter(s).  The internal buffers of the cross-assembler will 
+        accommodate lines of up to 255 characters which should be more 
+        than ample for almost any job.  If you must use longer lines, 
+        change the constant MAXLINE in file A18.H and recompile the 
+        cross-assembler.  Otherwise, you will overflow the buffers, and 
+        the program will mysteriously crash.
+
+             Each source line is made up of three fields:  the label 
+        field, the opcode field, and the argument field.  The label field 
+        is optional, but if it is present, it must begin in column 1.  
+        The opcode field is optional, but if it is present, it must not 
+        begin in column 1.  If both a label and an opcode are present, 
+        one or more spaces and/or TAB characters must separate the two.  
+        If the opcode requires arguments, they are placed in the argument 
+        field which is separated from the opcode field by one or more 
+        spaces and/or TAB characters.  Finally, an optional comment can 
+        be added to the end of the line.  This comment must begin with a 
+        semicolon which signals the assembler to pass the rest of the 
+        line to the listing and otherwise ignore it.  Thus, the source 
+        line looks like this:
+
+             {label}{ opcode{ arguments}}{;commentary}
+
+        where the { } indicates that the specified item is optional.
+
+             Some examples are in order:
+
+          column 1
+             |
+             v
+             GRONK   RLDI  R1, POINTER     ; This line has everything.
+                     SEX   R1              ; This line has no label.
+             BEEP                          ; This line has no opcode.
+             ; This line has no label and no opcode.
+
+             ; The previous line has nothing at all.
+                     END                   ; This line has no argument.
+
+
+
+
+
+
+                                        4
+---------------------------------------------------------------------------
+
+
+        2.1  Labels
+
+             A label is any sequence of alphabetic or numeric characters 
+        starting with an alphabetic.  The legal alphabetics are:
+
+              ! # $ % & , . : ?  @ [ \ ] ^ _  ` { | }  ~  A-Z  a-z
+
+        The numeric characters are the digits 0-9.  Note that "A" is not 
+        the same as "a" in a label.  This can explain mysterious U 
+        (undefined label) errors occurring when a label appears to be 
+        defined.
+
+             A label is permitted on any line except a line where the 
+        opcode is IF, ELSE, or ENDIF.  The label is assigned the value of 
+        the assembly program counter before any of the rest of the line 
+        is processed except when the opcode is EQU, ORG, PAGE, or SET.
+
+             Labels can have the same name as opcodes, but they cannot
+        have the same name as operators or registers.  The reserved 
+        (operator and register) names are:
+
+             $         AND       EQ        GE        GT        HIGH
+             LE        LT        LOW       MOD       NE        NOT
+             OR        SHL       SHR       XOR
+
+             If a label is used in an expression before it is assigned a 
+        value, the label is said to be "forward-referenced."  For 
+        example:
+
+             L1   EQU  L2 + 1   ; L2 is forward-referenced here.
+             L2
+             L3   EQU  L2 + 1   ; L2 is not forward-referenced here.
+
+
+        2.2  Numeric Constants
+
+             Numeric constants are formed according to the Intel 
+        convention.  A numeric constant starts with a numeric character 
+        (0-9), continues with zero or more digits (0-9, A-F), and ends 
+        with an optional base designator.  The base designators are H for 
+        hexadecimal, none or D for decimal, O or Q for octal, and B for 
+        binary.  The hex digits a-f are converted to upper case by the 
+        assembler.  Note that a numeric constant cannot begin with A-F as 
+        it would be indistinguishable from a label.  Thus, all of the 
+        following evaluate to 255 (decimal):
+
+                   0ffH   255   255D   377O   377Q   11111111B
+
+
+        2.3  String Constants
+
+             A string constant is zero or more characters enclosed in 
+        either single quotes (' ') or double quotes (" ").  Single quotes 
+        only match single quotes, and double quotes only match double 
+        quotes, so if you want to put a single quote in a string, you can 
+
+
+                                        5
+---------------------------------------------------------------------------
+
+
+        do it like this:  "'".  In all contexts except the TEXT 
+        statement, the first character or two of the string constant are 
+        all that are used.  The rest is ignored.  Noting that the ASCII 
+        codes for "A" and "B" are $41 and $42, respectively, will explain 
+        the following examples:
+
+                  "" and ''           evaluate to $0000
+                  "A" and 'A'         evaluate to $0041
+                  "AB"                evaluates to $4142
+
+        Note that the null string "" is legal and evaluates to $0000.
+
+
+        2.4  Expressions
+
+             An expression is made up of labels, numeric constants, and 
+        string constants glued together with arithmetic operators, 
+        logical operators, and parentheses in the usual way that 
+        algebraic expressions are made.  Operators have the following 
+        fairly natural order of precedence:
+
+             Highest        anything in parentheses
+                            unary +, unary -
+                            *, /, MOD, SHL, SHR
+                            binary +, binary -
+                            LT, LE, EQ, GE, GT, NE
+                            NOT
+                            AND
+                            OR, XOR
+             Lowest         HIGH, LOW
+
+             A few notes about the various operators are in order:
+
+             1)   The remainder operator MOD yields the remainder from 
+                  dividing its left operand by its right operand.
+
+             2)   The shifting operators SHL and SHR shift their left 
+                  operand to the left or right the number of bits 
+                  specified by their right operand.
+
+             3)   The relational operators LT, LE, EQ, GE, GT, and NE can 
+                  also be written as <, <= or =<, =, >= or =>, and <> or 
+                  ><, respectively.  They evaluate to 0FFFFH if the 
+                  statement is true, 0 otherwise.
+
+             4)   The logical opeators NOT, AND, OR, and XOR do bitwise 
+                  operations on their operand(s).
+
+             5)   HIGH and LOW extract the high or low byte, of an 
+                  expression.
+
+             6)   The special symbol $ can be used in place of a label or 
+                  constant to represent the value of the program counter 
+                  before any of the current line has been processed.
+
+
+
+                                        6
+---------------------------------------------------------------------------
+
+
+             Some examples are in order at this point:
+
+             2 + 3 * 4                          evaluates to 14
+             (2 + 3) * 4                        evaluates to 20
+             NOT %11110000 XOR %00001010        evaluates to %00000101
+             HIGH 1234H SHL 1                   evaluates to $0024
+             001Q EQ 0                          evaluates to 0
+             001Q = 2 SHR 1                     evaluates to $FFFF
+
+             All arithmetic is unsigned with overflow from the 16-bit 
+        word ignored.  Thus:
+
+             32768 * 2                          evaluates to 0
+
+
+        3.0  Machine Opcodes
+
+             The opcodes of the 1802 and 1805A processors are divided 
+        into groups below by the type of arguments required in the 
+        argument field of the source line.  Opcodes that are peculiar to 
+        the 1805A are marked with an asterisk.  If an opcode requires 
+        multiple arguments, these must be placed in the argument field in 
+        order and separated by commas.
+
+
+        3.1  Opcodes -- No Arguments
+
+             The following opcodes allow no arguments at all in their 
+        argument fields:
+
+             ADC       ADD       AND       CID *     CIE *     DADC *
+             DADD *    DIS       DSAV *    DSM *     DSMB *    DTC *
+             ETQ *     GEC *     IDL       IRX       LDC *     LDX
+             LDXA      LSDF      LSIE      LSKP      LSNF      LSNQ
+             LSNZ      LSQ       LSZ       MARK      NOP       OR
+             REQ       RET       RSHL      RSHR      SAV       SCM1 *
+             SCM2 *    SD        SDB       SEQ       SHL       SHLC
+             SHR       SHRC      SKP       SM        SMB       SPM1 *
+             SPM2 *    STM *     STPC *    STXD      XID *     XIE *
+                                 XOR
+
+
+        3.2  Opcodes -- One Register Argument
+
+             The following opcodes require one argument that is in the 
+        range 0 - 15 (except LDN which requires 1 - 15):
+
+             DEC       GHI       GLO       INC       LDA       LDN
+             PHI       PLO       RLXA *    RNX *     RSXD *    SEP
+                       SEX       SRET *    STR
+
+
+
+
+
+
+
+                                        7
+---------------------------------------------------------------------------
+
+
+        3.3  Opcodes -- One I/O Port Argument
+
+             The following opcodes require one argument that is in the 
+        range 1 - 7:
+
+                                 INP       OUT
+
+
+        3.4  Opcodes -- One Immediate Argument
+
+             The following opcodes require one argument that is in the 
+        range -128 through 255:
+
+             ADCI      ADI       ANI       DACI *    DADI *    DSBI *
+             DSMI *    LDI       ORI       SDBI      SDI       SMBI
+             SMI       XRI
+
+
+        3.5  Opcodes -- One Memory Argument
+
+             The following opcodes require one argument that can have any 
+        value:
+
+             LBDF      LBNF      LBNQ      LBNZ      LBQ       LBR
+                                 LBZ       NLBR
+
+
+        3.6  Opcodes -- Two Arguments
+
+             The opcodes in this group require two arguments.  The first 
+        must be in the range 0 - 15.  The second can have any value.  The 
+        opcodes are:
+
+                       DBNZ *    RLDI *    SCAL *
+
+
+        3.7  Opcodes -- Short Branches
+
+             The opcodes in this group require one argument whose high 
+        byte is the same as the high byte of the address of the LAST byte 
+        of the insruction.  The opcodes are:
+
+             B1        B2        B3        B4        BCI *     BDF
+             BGE       BL        BM        BN1       BN2       BN3
+             BN4       BNF       BNQ       BNZ       BPZ       BQ
+                       BR        BXI *     BZ        NBR
+
+
+        4.0  Pseudo Opcodes
+
+             Unlike 1802/1805A opcodes, pseudo opcodes (pseudo-ops) do 
+        not represent machine instructions.  They are, rather, directives 
+        to the assembler.  These directives require various numbers and 
+        types of arguments.  They will be listed individually below.
+
+
+
+                                        8
+---------------------------------------------------------------------------
+
+
+
+        4.1  Pseudo-ops -- BLK
+
+             The BLK pseudo-op is used to reserve a block of storage for 
+        program variables, or whatever.  This storage is not initialized 
+        in any way, so its value at run time will usually be random.  The 
+        argument expression (which may contain no forward references) is 
+        added to the assembly program counter.  The following statement 
+        would reserve 10 bytes of storage called "STORAGE":
+
+             STORAGE   BLK       10
+
+
+        4.2  Pseudo-ops -- BYTE
+
+             The BYTE pseudo-op allows arbitrary bytes to be spliced into 
+        the object code.  Its argument is a chain of zero or more 
+        expressions that evaluate to -128 through 255 separated by 
+        commas.  If a comma occurs with no preceding expression, a 00H 
+        byte is spliced into the object code.  The sequence of bytes 
+        0FEH, 0FFH, 00H, 01H, 02H could be spliced into the code with the 
+        following statement:
+
+                       BYTE      -2, -1, , 1, 2
+
+
+        4.3  Pseudo-ops -- CPU
+
+             By default, the assembler does not recognize the additional 
+        opcodes of the 1805A CPU.  This prevents the assembler from 
+        generating invalid 1802 object code.  The additional 1805A 
+        opcodes are turned on and off by this pseudo-op which requires 
+        one argument whose value is either 1802 or 1805 (decimal).  Thus:
+
+                       CPU       1802      ;turns additional opcodes off
+                       CPU       1805      ;turns additional opcodes on
+
+
+        4.4  Pseudo-ops -- EJCT
+
+             The EJCT pseudo-op always causes an immediate page ejection 
+        in the listing by inserting a form feed ('\f') character before 
+        the next line.  If an argument is specified, the argument 
+        expression specifies the number of lines per page in the listing.  
+        Legal values for the expression are any number except 1 and 2.  A 
+        value of 0 turns the listing pagination off.  Thus, the following 
+        statement cause a page ejection and would divide the listing into 
+        60-line pages:
+
+                       EJCT      60
+
+
+
+
+
+
+
+                                        9
+---------------------------------------------------------------------------
+
+
+        4.5  Pseudo-ops -- END
+
+             The END pseudo-op tells the assembler that the source 
+        program is over.  Any further lines of the source file are 
+        ignored and not passed on to the listing.  If an argument is 
+        added to the END statement, the value of the argument will be 
+        placed in the execution address slot in the Intel hex object 
+        file.  The execution address defaults to the program counter 
+        value at the point where the END was encountered.  Thus, to 
+        specify that the program starts at label START, the END statement 
+        would be:
+
+                       END       START
+
+             If end-of-file is encountered on the source file before an 
+        END statement is reached, the assembler will add an END statement 
+        to the listing and flag it with a * (missing statement) error.
+
+
+        4.6  Pseudo-ops -- EQU
+
+             The EQU pseudo-op is used to assign a specific value to a 
+        label, thus the label on this line is REQUIRED.  Once the value 
+        is assigned, it cannot be reassigned by writing the label in 
+        column 1, by another EQU statement, or by a SET statement.  Thus, 
+        for example, the following statement assigns the value 2 to the 
+        label TWO:
+
+             TWO       EQU       1 + 1
+
+             The expression in the argument field must contain no forward 
+        references.
+
+
+        4.7  Pseudo-ops -- IF, ELSE, ENDI
+
+             These three pseudo-ops allow the assembler to choose whether 
+        or not to assemble certain blocks of code based on the result of 
+        an expression.  Code that is not assembled is passed through to 
+        the listing but otherwise ignored by the assembler.  The IF 
+        pseudo-op signals the beginning of a conditionally assembled 
+        block.  It requires one argument that may contain no forward 
+        references.  If the value of the argument is non-zero, the block 
+        is assembled.  Otherwise, the block is ignored.  The ENDI pseudo-
+        op signals the end of the conditionally assembled block.  For 
+        example:
+
+                       IF   EXPRESSION     ;This whole thing generates
+                       BYTE 01H, 02H, 03H  ;  no code whatsoever if
+                       ENDI                ;  EXPRESSION is zero.
+
+        The ELSE pseudo-op allows the assembly of either one of two 
+        blocks, but not both.  The following two sequences are 
+        equivalent:
+
+
+
+                                       10
+---------------------------------------------------------------------------
+
+
+                       IF   EXPRESSION
+                       ... some stuff ...
+                       ELSE
+                       ... some more stuff ...
+                       ENDI
+
+             TEMP_LAB  SET  EXPRESSION
+                       IF   TEMP_LAB NE 0
+                       ... some stuff ...
+                       ENDI
+                       IF   TEMP_LAB EQ 0
+                       ... some more stuff ...
+                       ENDI
+
+             The pseudo-ops in this group do NOT permit labels to exist 
+        on the same line as the status of the label (ignored or not) 
+        would be ambiguous.
+
+             All IF statements (even those in ignored conditionally 
+        assembled blocks) must have corresponding ENDI statements and all 
+        ELSE and ENDI statements must have a corresponding IF statement.
+
+             IF blocks can be nested up to 16 levels deep before the 
+        assembler dies of a fatal error.  This should be adequate for any 
+        conceivable job, but if you need more, change the constant 
+        IFDEPTH in file A18.H and recompile the assembler.
+
+
+        4.8  Pseudo-ops -- INCL
+
+             The INCL pseudo-op is used to splice the contents of another 
+        file into the current file at assembly time.  The name of the 
+        file to be INCLuded is specified as a normal string constant, so 
+        the following line would splice the contents of file "const.def" 
+        into the source code stream:
+
+                       INCL      "const.def"
+
+             INCLuded files may, in turn, INCLude other files until four 
+        files are open simultaneously.  This limit should be enough for 
+        any conceivable job, but if you need more, change the constant 
+        FILES in file A18.H and recompile the assembler.
+
+
+        4.9  Pseudo-ops -- LOAD
+
+             This pseudo-op is a built-in macro that makes up for the 
+        1802's lack of the RLDI instruction.  The very common function of 
+        loading a 16-bit immediate value into a register is normally done 
+        with the following 4-line sequence:
+
+                       LDI       HIGH VALUE
+                       PHI       REGISTER
+                       LDI       LOW VALUE
+                       PLO       REGISTER
+
+
+                                       11
+---------------------------------------------------------------------------
+
+
+
+        This pseudo-op reduces the above sequence to the following line:
+
+                       LOAD      REGISTER, VALUE
+
+        Note that this construct blows away the contents of the D 
+        register whereas the 1805A's RLDI instruction blows away the T 
+        register and leaves the D register intact.
+
+
+        4.10 Pseudo-ops -- ORG
+
+             The ORG pseudo-op is used to set the assembly program 
+        counter to a particular value.  The expression that defines this 
+        value may contain no forward references.  The default initial 
+        value of the assembly program counter is 0000H.  The following 
+        statement would change the assembly program counter to 0F000H:
+
+                       ORG       0F000H
+
+             If a label is present on the same line as an ORG statement, 
+        it is assigned the new value of the assembly program counter.
+
+
+        4.11 Pseudo-ops -- PAGE
+
+             This pseudo-op is a built-in macro for a very common use of 
+        the ORG pseudo-op, i.e. setting the assembly program counter to 
+        the first address of the next 256-byte page.  The long-hand form 
+        using the ORG pseudo-op is:
+
+                       ORG       ($ + 255) AND 0FF00H
+
+        The short form is:
+
+                       PAGE
+
+        Note that this pseudo-op has no effect if the assembly counter is 
+        already at the beginning of a 256-byte page.
+
+
+        4.12 Pseudo-ops -- SET
+
+             The SET pseudo-op functions like the EQU pseudo-op except 
+        that the SET statement can reassign the value of a label that has 
+        already been assigned by another SET statement.  Like the EQU 
+        statement, the argument expression may contain no forward 
+        references.  A label defined by a SET statement cannot be 
+        redefined by writing it in column 1 or with an EQU statement.  
+        The following series of statements would set the value of label 
+        "COUNT" to 1, 2, then 3:
+
+             COUNT     SET       1
+             COUNT     SET       2
+             COUNT     SET       3
+
+
+                                       12
+---------------------------------------------------------------------------
+
+
+
+
+        4.13 Pseudo-ops -- TEXT
+
+             The TEXT pseudo-op allows character strings to be spliced 
+        into the object code.  Its argument is a chain of zero or more 
+        string constants separated by blanks, tabs, or commas.  If a 
+        comma occurs with no preceding string constant, an S (syntax) 
+        error results.  The string contants are not truncated to two 
+        bytes, but are instead copied verbatim into the object code.  
+        Null strings result in no bytes of code.  The message "Kaboom!!" 
+        could be spliced into the code with the following statement:
+
+                       TEXT      "Kaboom!!"     ;This is 8 bytes of code.
+
+
+        4.14 Pseudo-ops -- TITL
+
+             The TITL pseudo-op sets the running title for the listing.  
+        The argument field is required and must be a string constant, 
+        though the null string ("") is legal.  This title is printed 
+        after every page ejection in the listing, therefore, if page 
+        ejections have not been forced by the PAGE pseudo-op, the title 
+        will never be printed.  The following statement would print the 
+        title "Random Bug Generator -- Ver 3.14159" at the top of every 
+        page of the listing:
+
+                       TITL      "Random Bug Generator -- Ver 3.14159"
+
+
+        4.15 Pseudo-ops -- WORD
+
+             The WORD pseudo-op allows 16-bit words to be spliced into 
+        the object code.  Its argument is a chain of zero or more 
+        expressions separated by commas.  If a comma occurs with no 
+        preceding expression, a word of 0000H is spliced into the code.  
+        The word is placed into memory high byte in low address, low byte 
+        in high address as per standard Motorola order.  The sequence of 
+        bytes 0FEH, 0FFH, 00H, 00H, 01H, 02H could be spliced into the 
+        code with the following statement:
+
+                       WORD      0FEFFH, , 0102H
+
+
+        5.0  Assembly Errors
+
+             When a source line contains an illegal construct, the line 
+        is flagged in the listing with a single-letter code describing 
+        the error.  The meaning of each code is listed below.  In 
+        addition, a count of the number of lines with errors is kept and 
+        printed on the C "stderr" device (by default, the console) after 
+        the END statement is processed.  If more than one error occurs in 
+        a given line, only the first is reported.  For example, the 
+        illegal label "=$#*'(" would generate the following listing line:
+
+
+
+                                       13
+---------------------------------------------------------------------------
+
+
+             L  0000   FF 00 00      =$#*'(     LDA       R0
+
+
+        5.1  Error * -- Illegal or Missing Statement
+
+             This error occurs when either:
+
+             1)   the assembler reaches the end of the source file 
+                  without seeing an END statement, or
+
+             2)   an END statement is encountered in an INCLude file.
+
+             If you are "sure" that the END statement is present when the 
+        assembler thinks that it is missing, it probably is in the 
+        ignored section of an IF block.  If the END statement is missing, 
+        supply it.  If the END statement is in an INCLude file, delete 
+        it.
+
+
+        5.2  Error ( -- Parenthesis Imbalance
+
+             For every left parenthesis, there must be a right paren-
+        thesis.  Count them.
+
+
+        5.3  Error " -- Missing Quotation Mark
+
+             Strings have to begin and end with either " or '.  Remember 
+        that " only matches " while ' only matches '.
+
+
+        5.4  Error B -- Branch Target Too Distant
+
+             The 1805A short branch instructions will only reach bytes 
+        that are on the same 256-byte page as the last byte of the branch 
+        instruction.  If this error occurs, the source code will have to 
+        be rearranged to bring the branch target onto the correct page or 
+        a long branch instruction that will reach anywhere will have to 
+        be used.
+
+
+        5.5  Error D -- Illegal Digit
+
+             This error occurs if a digit greater than or equal to the 
+        base of a numeric constant is found.  For example, a 2 in a 
+        binary number would cause a D error.  Especially, watch for 8 or 
+        9 in an octal number.
+
+
+        5.6  Error E -- Illegal Expression
+
+             This error occurs because of:
+
+             1)   a missing expression where one is required
+
+
+
+                                       14
+---------------------------------------------------------------------------
+
+
+             2)   a unary operator used as a binary operator or vice-
+                  versa
+
+             3)   a missing binary operator
+
+             4)   a SHL or SHR count that is not 0 thru 15
+
+
+        5.7  Error I -- IF-ENDI Imbalance
+
+             For every IF there must be a corresponding ENDI.  If this 
+        error occurs on an ELSE or ENDI statement, the corresponding IF 
+        is missing.  If this error occurs on an END statement, one or 
+        more ENDI statements are missing.
+
+
+        5.8  Error L -- Illegal Label
+
+             This error occurs because of:
+
+             1)   a non-alphabetic in column 1
+
+             2)   a reserved word used as a label
+
+             3)   a missing label on an EQU or SET statement
+
+             4)   a label on an IF, ELSE, or ENDI statement
+
+
+        5.9  Error M -- Multiply Defined Label
+
+             This error occurs because of:
+
+             1)   a label defined in column 1 or with the EQU statement 
+                  being redefined
+
+             2)   a label defined by a SET statement being redefined 
+                  either in column 1 or with the EQU statement
+
+             3)   the value of the label changing between assembly passes
+
+
+        5.10 Error O -- Illegal Opcode
+
+             The opcode field of a source line may contain only a valid 
+        machine opcode, a valid pseudo-op, or nothing at all.  Anything 
+        else causes this error.  Note that the unique 1805A opcodes are 
+        not valid until they are enabled with the CPU statement.
+
+
+
+
+
+
+
+
+
+                                       15
+---------------------------------------------------------------------------
+
+
+        5.11 Error P -- Phasing Error
+
+             This error occurs because of:
+
+             1)   a forward reference in a BLK, CPU, EQU, ORG, or SET 
+                  statement
+
+             2)   a label disappearing between assembly passes
+
+
+        5.12 Error R -- Illegal Register
+
+             This error occurs when a register argument is not in the 
+        range 0 - 15 (1 - 15 for LDN) or when an I/O port argument is not 
+        in the range 1 - 7.
+
+
+        5.13 Error S -- Illegal Syntax
+
+             This error means that an argument field is scrambled.  Sort 
+        the mess out and reassemble.
+
+
+        5.14 Error T -- Too Many Arguments
+
+             This error occurs if there are more items (expressions, 
+        register designators, etc.) in the argument field than the opcode 
+        or pseudo-op requires.  The assembler ignores the extra items but 
+        issues this error in case something is really mangled.
+
+
+        5.15 Error U -- Undefined Label
+
+             This error occurs if a label is referenced in an expression 
+        but not defined anywhere in the source program.  If you are 
+        "sure" you have defined the label, note that upper and lower case 
+        letters in labels are different.  Defining "LABEL" does not 
+        define "Label."
+
+
+        5.16 Error V -- Illegal Value
+
+             This error occurs because:
+
+             1)   an immediate value is not -128 thru 255, or
+
+             2)   a BYTE argument is not -128 thru 255, or
+
+             3)   a CPU argument is not 1802 and not 1805, or
+
+             4)   an INCL argument refers to a file that does not exist.
+
+
+
+
+
+
+                                       16
+---------------------------------------------------------------------------
+
+
+        6.0  Warning Messages
+
+             Some errors that occur during the parsing of the cross-
+        assembler command line are non-fatal.  The cross-assembler flags 
+        these with a message on the C "stdout" device (by default, the 
+        console) beginning with the word "Warning."  The messages are 
+        listed below:
+
+
+        6.1  Warning -- Illegal Option Ignored
+
+             The only options that the cross-assembler knows are -l and  
+        -o.  Any other command line argument beginning with - will draw 
+        this error.
+
+
+        6.2  Warning -- -l Option Ignored -- No File Name
+        6.3  Warning -- -o Option Ignored -- No File Name
+
+             The -l and -o options require a file name to tell the 
+        assembler where to put the listing file or object file.  If this 
+        file name is missing, the option is ignored.
+
+
+        6.4  Warning -- Extra Source File Ignored
+
+             The cross-assembler will only assemble one file at a time, 
+        so source file names after the first are ignored.  To assemble a 
+        second file, invoke the assembler again.  Note that under CP/M-
+        80, the old trick of reexecuting a core image will NOT work as 
+        the initialized data areas are not reinitialized prior to the 
+        second run.
+
+
+        6.5  Warning -- Extra Listing File Ignored
+        6.6  Warning -- Extra Object File Ignored
+
+             The cross-assembler will only generate one listing and 
+        object file per assembly run, so -l and -o options after the 
+        first are ignored.
+
+
+        7.0  Fatal Error Messages
+
+             Several errors that occur during the parsing of the cross-
+        assembler command line or during the assembly run are fatal.  The 
+        cross-assembler flags these with a message on the C "stdout" 
+        device (by default, the console) beginning with the words "Fatal 
+        Error."  The messages are explained below:
+
+
+        7.1  Fatal Error -- No Source File Specified
+
+             This one is self-explanatory.  The assembler does not know 
+        what to assemble.
+
+
+                                       17
+---------------------------------------------------------------------------
+
+
+
+
+        7.2  Fatal Error -- Source File Did Not Open
+
+             The assembler could not open the source file.  The most 
+        likely cause is that the source file as specified on the command 
+        line does not exist.  On larger systems, there could also be 
+        priviledge violations.  Rarely, a read error in the disk 
+        directory could cause this error.
+
+
+        7.3  Fatal Error -- Listing File Did Not Open
+        7.4  Fatal Error -- Object File Did Not Open
+
+             This error indicates either a defective listing or object 
+        file name or a full disk directory.  Correct the file name or 
+        make more room on the disk.
+
+
+        7.5  Fatal Error -- Error Reading Source File
+
+             This error generally indicates a read error in the disk data 
+        space.  Use your backup copy of the source file (You do have one, 
+        don't you?) to recreate the mangled file and reassemble.
+
+
+        7.6  Fatal Error -- Disk or Directory Full
+
+             This one is self-explanatory.  Some more space must be found 
+        either by deleting files or by using a disk with more room on it.
+
+
+        7.7  Fatal Error -- File Stack Overflow
+
+             This error occurs if you exceed the INCLude file limit of 
+        four files open simultaneously.  This limit can be increased by 
+        increasing the constant FILES in file A18.H and recompiling the 
+        cross-assembler.
+
+
+        7.8  Fatal Error -- If Stack Overflow
+
+             This error occurs if you exceed the nesting limit of 16 IF 
+        blocks.  This limit can be increased by increasing the constant 
+        IFDEPTH in file A18.H and recompiling the cross-assembler.
+
+
+        7.9  Fatal Error -- Too Many Symbols
+
+             Congratulations!  You have run out of memory.  The space for 
+        the cross-assembler's symbol table is allocated at run-time using 
+        the C library function alloc(), so the cross-assembler will use 
+        all available memory.  The only solutions to this problem are to 
+        lessen the number of labels in the source program or to add more 
+        memory.
+
+
+                                       18
