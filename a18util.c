@@ -414,7 +414,7 @@ void lputs()
                      else fprintf(list," %02x",*o++); 
 
                       if (binary){
-                          fprintf(list, ":",bb);
+                          fprintf(list, ":");
                           for (k=0;k<8;k++){ 
                               if (bb&0x80)
                                   fprintf(list, "1");
